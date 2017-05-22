@@ -15,7 +15,8 @@ def txt_reader(file_txt, encoding='utf-8'):
 
 
 class KeywordRanker(object):
-    def __init__(self, min_char_length=1, max_words_length=3, min_keyword_frequency=1, lemmatize=False,
+    def __init__(self, min_char_length=1, max_words_length=3,
+                min_keyword_frequency=1, lemmatize=False,
                 absolute_deviation=True, stopwords_txt='smartstoplist.txt'):
         self.min_char_length = min_char_length
         self.max_words_length = max_words_length
@@ -24,6 +25,7 @@ class KeywordRanker(object):
         self.lemmatize = lemmatize
         self.absolute_deviation = absolute_deviation
         self.stopwords_txt = stopwords_txt
+        self.stopwordpattern = rake.build_stop_word_regex(self.stopwords_txt)
 
     def fit(self, corpus_txt, encoding='utf-8'):
         rake_object = rake.Rake(self.stopwords_txt, self.min_char_length,
@@ -35,9 +37,8 @@ class KeywordRanker(object):
     def wordscores(self, transcript_txt, encoding='utf-8'):
         text = txt_reader(transcript_txt, encoding=encoding)
         sentencelist = rake.split_sentences(text)
-        stopwordpattern = rake.build_stop_word_regex(self.stopwords_txt)
         phraselist = rake.generate_candidate_keywords(sentencelist,
-                        stopwordpattern, self.min_char_length,
+                        self.stopwordpattern, self.min_char_length,
                         self.max_words_length, self.lemmatize)
         wordscores = rake.calculate_word_scores(phraselist)
         return wordscores
@@ -57,8 +58,9 @@ class KeywordRanker(object):
                     except KeyError:
                         pass
                 keyword_scores[keyword] += keyword_score
-        keyword_rank = [(key, keyword_scores[key]) for key in sorted(keyword_scores,
-                        key=keyword_scores.get, reverse = True)]
+        keyword_rank = [(key, keyword_scores[key]) for key in
+                        sorted(keyword_scores, key=keyword_scores.get,
+                        reverse=True)]
         keyword_deviation = self.get_deviation(keyword_rank, n)
         return keyword_rank, keyword_deviation
 
@@ -72,9 +74,8 @@ class KeywordRanker(object):
             keyword_deviation = [(kwr_sorted[i][0], (kwr_sorted[i][1]
                                 - ckw_sorted[i][1]) / ckw_sorted[i][1]) for i in
                                 range(n)]
-        keyword_deviation_unsorted = sorted(keyword_deviation, )
         kw_zipped = zip(keyword_deviation, kwr_sorted)
-        kw_zipped_sorted = sorted (kw_zipped, key=lambda x: -x[1][1])
+        kw_zipped_sorted = sorted(kw_zipped, key=lambda x: -x[1][1])
         keyword_deviation = [kw[0] for kw in kw_zipped_sorted]
         return keyword_deviation
 
