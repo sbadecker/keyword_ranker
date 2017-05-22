@@ -16,7 +16,7 @@ def txt_reader(file_txt, encoding='utf-8'):
 
 class KeywordRanker(object):
     def __init__(self, min_char_length=1, max_words_length=3,
-                min_keyword_frequency=1, lemmatize=False,
+                min_keyword_frequency=3, lemmatize=False,
                 absolute_deviation=True, stopwords_txt='smartstoplist.txt'):
         self.min_char_length = min_char_length
         self.max_words_length = max_words_length
@@ -33,6 +33,9 @@ class KeywordRanker(object):
                         self.lemmatize)
         text = txt_reader(corpus_txt, encoding=encoding)
         self.corpus_keywords = rake_object.run(text)
+        if self.corpus_keywords == []:
+            raise ValueError('No keywords for these input parameters.')
+
 
     def wordscores(self, transcript_txt, encoding='utf-8'):
         text = txt_reader(transcript_txt, encoding=encoding)
@@ -65,6 +68,9 @@ class KeywordRanker(object):
         return keyword_rank, keyword_deviation
 
     def get_deviation(self, keyword_rank, n, absolute=True):
+        if n > len(self.corpus_keywords):
+            raise ValueError('n too large. Pick n of max. {}.' \
+            .format(len(self.corpus_keywords)))
         kwr_sorted = sorted(keyword_rank)
         ckw_sorted = sorted(self.corpus_keywords[:n])
         if self.absolute_deviation:
@@ -88,11 +94,6 @@ if __name__ == '__main__':
     transcript3 = '/Users/stefandecker/Coding/keyword_ranker/data/transcript_2.txt'
 
 
-    kwr = KeywordRanker(2, 3, 3, lemmatize=False)
+    kwr = KeywordRanker(1, 3, 2, lemmatize=True)
     kwr.fit(corpus)
     keyword_rank1, keyword_deviation1 = kwr.rank(10, transcript1, transcript2, transcript3)
-
-
-    kwr = KeywordRanker(2, 3, 3, lemmatize=True, absolute_deviation=False)
-    kwr.fit(corpus)
-    keyword_rank2, keyword_deviation2 = kwr.rank(10, transcript1, transcript2, transcript3)
