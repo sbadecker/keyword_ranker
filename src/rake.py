@@ -1,11 +1,14 @@
 # Implementation of RAKE - Rapid Automtic Keyword Exraction algorithm
 # as described in:
 # Rose, S., D. Engel, N. Cramer, and W. Cowley (2010).
-# Automatic keyword extraction from indi-vidual documents.
-# In M. W. Berry and J. Kogan (Eds.), Text Mining: Applications and Theory.unknown: John Wiley and Sons, Ltd.
+# Automatic keyword extraction from individual documents.
+# In M. W. Berry and J. Kogan (Eds.), Text Mining: Applications and
+# Theory.unknown: John Wiley and Sons, Ltd.
 #
 # NOTE: The original code can be found here:
 # https://github.com/zelandiya/RAKE-tutorial
+# has been extended by sbadecker to support lemmatization using
+# WordNetLemmatizer from the NLTK.
 
 
 from __future__ import absolute_import
@@ -14,6 +17,7 @@ import re
 import operator
 import six
 from six.moves import range
+from nltk.stem import WordNetLemmatizer
 
 
 def is_number(s):
@@ -38,12 +42,26 @@ def load_stop_words(stop_word_file):
     return stop_words
 
 
+def lemmatize_phrases(phraselist):
+    lemmatizer = WordNetLemmatizer()
+    phraselist_lemmatized = []
+    for phrase in phraselist:
+        words = phrase.split(' ')
+        phrase_temp = []
+        for word in words:
+            word = lemmatizer.lemmatize(word)
+            phrase_temp.append(word)
+        phraselist_lemmatized.append(' '.join(phrase_temp))
+    return phraselist_lemmatized
+
+
 def separate_words(text, min_word_return_size):
     """
     Utility function to return a list of all words that are have a length greater than a specified number of characters.
     @param text The text that must be split in to words.
     @param min_word_return_size The minimum no of characters a word must have to be included.
     """
+    lemmatizer = WordNetLemmatizer()
     splitter = re.compile('[^a-zA-Z0-9_\\+\\-/]')
     words = []
     for single_word in splitter.split(text):
@@ -74,11 +92,13 @@ def build_stop_word_regex(stop_word_file_path):
     return stop_word_pattern
 
 
-def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length=1, max_words_length=5):
+def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length=1, max_words_length=5, lemmatize=False):
     phrase_list = []
     for s in sentence_list:
         tmp = re.sub(stopword_pattern, '|', s.strip())
         phrases = tmp.split("|")
+        if lemmatize:
+            phrases = lemmatize_phrases(phrases)
         for phrase in phrases:
             phrase = phrase.strip().lower()
             if phrase != "" and is_acceptable(phrase, min_char_length, max_words_length):
@@ -158,17 +178,18 @@ def generate_candidate_keyword_scores(phrase_list, word_score, min_keyword_frequ
 
 
 class Rake(object):
-    def __init__(self, stop_words_path, min_char_length=1, max_words_length=5, min_keyword_frequency=1):
+    def __init__(self, stop_words_path, min_char_length=1, max_words_length=5, min_keyword_frequency=1, lemmatize=False):
         self.__stop_words_path = stop_words_path
         self.__stop_words_pattern = build_stop_word_regex(stop_words_path)
         self.__min_char_length = min_char_length
         self.__max_words_length = max_words_length
         self.__min_keyword_frequency = min_keyword_frequency
+        self.__lemmatize = lemmatize
 
     def run(self, text):
         sentence_list = split_sentences(text)
 
-        phrase_list = generate_candidate_keywords(sentence_list, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length)
+        phrase_list = generate_candidate_keywords(sentence_list, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length, self.__lemmatize)
 
         word_scores = calculate_word_scores(phrase_list)
 
