@@ -1,38 +1,46 @@
+'''
+Requirements:
+- nltk needs to be installed
+- corpora/wordnet from NLTK needs to be downloaded
+'''
+
 import rake
 from collections import defaultdict
-import operator
+
 
 def txt_reader(file_txt, encoding='utf-8'):
-    file_obj = open(file_txt, 'r', encoding=encoding)
-    text = file_obj.read()
+    f = open(file_txt, 'r', encoding=encoding)
+    text = f.read()
     return text
 
-class KeywordRanker(object):
-    def __init__(self, min_chars=1, max_words=3, min_occurances=1, stopwords_txt='smartstoplist.txt'):
-        self.stopwords_txt = stopwords_txt
-        self.max_words = max_words
-        self.min_chars = min_chars
-        self.min_occurances = min_occurances
-        self.corpus_keywords = None
 
+class KeywordRanker(object):
+    def __init__(self, min_char_length=1, max_words_length=3, min_keyword_frequency=1, lemmatize=False,
+                absolute_deviation=True, stopwords_txt='smartstoplist.txt'):
+        self.min_char_length = min_char_length
+        self.max_words_length = max_words_length
+        self.min_keyword_frequency = min_keyword_frequency
+        self.corpus_keywords = None
+        self.lemmatize = lemmatize
+        self.absolute_deviation = absolute_deviation
+        self.stopwords_txt = stopwords_txt
 
     def fit(self, corpus_txt, encoding='utf-8'):
-        rake_object = rake.Rake(self.stopwords_txt, self.min_chars,
-                            self.max_words, self.min_occurances)
+        rake_object = rake.Rake(self.stopwords_txt, self.min_char_length,
+                        self.max_words_length, self.min_keyword_frequency,
+                        self.lemmatize)
         text = txt_reader(corpus_txt, encoding=encoding)
         self.corpus_keywords = rake_object.run(text)
 
-
-    def wordscores(self, transcript_txt, encoding='utf-8', min_chars=1,
-                    max_words=3, min_occurances=1):
+    def wordscores(self, transcript_txt, encoding='utf-8'):
         text = txt_reader(transcript_txt, encoding=encoding)
         sentencelist = rake.split_sentences(text)
         stopwordpattern = rake.build_stop_word_regex(self.stopwords_txt)
         phraselist = rake.generate_candidate_keywords(sentencelist,
-                            stopwordpattern, min_chars, max_words)
+                        stopwordpattern, self.min_char_length,
+                        self.max_words_length, self.lemmatize)
         wordscores = rake.calculate_word_scores(phraselist)
         return wordscores
-
 
     def rank(self, n, *transcripts, encoding='utf-8'):
         '''Scores the ton n corpus keywords with a wordscores list.'''
@@ -50,16 +58,20 @@ class KeywordRanker(object):
                         pass
                 keyword_scores[keyword] += keyword_score
         keyword_rank = [(key, keyword_scores[key]) for key in sorted(keyword_scores,
-                key=keyword_scores.get, reverse = True)]
+                        key=keyword_scores.get, reverse = True)]
         keyword_deviation = self.get_deviation(keyword_rank, n)
         return keyword_rank, keyword_deviation
 
-
-    def get_deviation(self, keyword_rank, n):
+    def get_deviation(self, keyword_rank, n, absolute=True):
         kwr_sorted = sorted(keyword_rank)
         ckw_sorted = sorted(self.corpus_keywords[:n])
-        keyword_deviation = [(kwr_sorted[i][0], (kwr_sorted[i][1]-ckw_sorted[i][1])
-                            / ckw_sorted[i][1]) for i in range(n)]
+        if self.absolute_deviation:
+            keyword_deviation = [(kwr_sorted[i][0], (kwr_sorted[i][1]
+                                - ckw_sorted[i][1])) for i in range(n)]
+        else:
+            keyword_deviation = [(kwr_sorted[i][0], (kwr_sorted[i][1]
+                                - ckw_sorted[i][1]) / ckw_sorted[i][1]) for i in
+                                range(n)]
         keyword_deviation_unsorted = sorted(keyword_deviation, )
         kw_zipped = zip(keyword_deviation, kwr_sorted)
         kw_zipped_sorted = sorted (kw_zipped, key=lambda x: -x[1][1])
@@ -75,8 +87,11 @@ if __name__ == '__main__':
     transcript3 = '/Users/stefandecker/Coding/keyword_ranker/data/transcript_2.txt'
 
 
-
-    kwr = KeywordRanker(2, 3, 3)
+    kwr = KeywordRanker(2, 3, 3, lemmatize=False)
     kwr.fit(corpus)
-    # keywords, top_n = kwr.rank(15, transcript1, transcript2, transcript3)
-    keyword_rank, keyword_deviation = kwr.rank(15, transcript1, transcript2, transcript3)
+    keyword_rank1, keyword_deviation1 = kwr.rank(10, transcript1, transcript2, transcript3)
+
+
+    kwr = KeywordRanker(2, 3, 3, lemmatize=True, absolute_deviation=False)
+    kwr.fit(corpus)
+    keyword_rank2, keyword_deviation2 = kwr.rank(10, transcript1, transcript2, transcript3)
