@@ -3,8 +3,8 @@ keyword\_ranker
 
 The Keyword Ranker uses the Rapid Automatic Keyword Extraction algorithm
 (RAKE) to extract the most relevant keywords from a reference corpus,
-checks them against other documents and ranks them depending on to which
-degree those keywords are represented in the aformentioned documents.
+and ranks them depending on the degree to which they are represented in other
+benchmark documents.
 
 Setup
 -----
