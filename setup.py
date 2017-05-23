@@ -10,5 +10,7 @@ setup(name='keyword_ranker',
       author_email='sba.decker@gmail.com',
       license='MIT',
       packages=['keyword_ranker'],
+      package_data={'keyword_ranker': ['smartstoplist.txt']},
+      install_requires=['nltk', 'six'],
       keywords='nlp text-mining algorithms',
       zip_safe=False)
