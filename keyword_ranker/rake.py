@@ -18,6 +18,13 @@ import operator
 import six
 from six.moves import range
 from nltk.stem import WordNetLemmatizer
+import nltk
+
+
+try:
+    _ = nltk.corpus.wordnet
+except Exception:
+    nltk.download('wordnet')
 
 
 def is_number(s):
@@ -28,18 +35,18 @@ def is_number(s):
         return False
 
 
-def load_stop_words(stop_word_file):
+def load_stopwords(stopword_file):
     """
     Utility function to load stop words from a file and return as a list of words
-    @param stop_word_file: Path and file name of a file containing stop words.
+    @param stopword_file: Path and file name of a file containing stop words.
     @return list: A list of stop words.
     """
-    stop_words = []
-    for line in open(stop_word_file):
+    stopwords = []
+    for line in open(stopword_file):
         if line.strip()[0:1] != "#":
             for word in line.split():  # in case more than one per line
-                stop_words.append(word)
-    return stop_words
+                stopwords.append(word)
+    return stopwords
 
 
 def lemmatize_phrases(phraselist):
@@ -86,14 +93,14 @@ def split_sentences(text):
     return sentences
 
 
-def build_stop_word_regex(stop_word_file_path):
-    stop_word_list = load_stop_words(stop_word_file_path)
-    stop_word_regex_list = []
-    for word in stop_word_list:
+def build_stopword_regex(stopword_file_path):
+    stopword_list = load_stopwords(stopword_file_path)
+    stopword_regex_list = []
+    for word in stopword_list:
         word_regex = '\\b' + word + '\\b'
-        stop_word_regex_list.append(word_regex)
-    stop_word_pattern = re.compile('|'.join(stop_word_regex_list), re.IGNORECASE)
-    return stop_word_pattern
+        stopword_regex_list.append(word_regex)
+    stopword_pattern = re.compile('|'.join(stopword_regex_list), re.IGNORECASE)
+    return stopword_pattern
 
 
 def generate_candidate_keywords(sentence_list, stopword_pattern,
@@ -185,10 +192,10 @@ def generate_candidate_keyword_scores(phrase_list, word_score,
 
 
 class Rake(object):
-    def __init__(self, stop_words_path, min_char_length=1, max_words_length=5,
+    def __init__(self, stopwords_path, min_char_length=1, max_words_length=5,
                 min_keyword_frequency=1, lemmatize=False):
-        self.__stop_words_path = stop_words_path
-        self.__stop_words_pattern = build_stop_word_regex(stop_words_path)
+        self.__stopwords_path = stopwords_path
+        self.__stopwords_pattern = build_stopword_regex(stopwords_path)
         self.__min_char_length = min_char_length
         self.__max_words_length = max_words_length
         self.__min_keyword_frequency = min_keyword_frequency
@@ -197,7 +204,7 @@ class Rake(object):
     def run(self, text):
         sentence_list = split_sentences(text)
 
-        phrase_list = generate_candidate_keywords(sentence_list, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length, self.__lemmatize)
+        phrase_list = generate_candidate_keywords(sentence_list, self.__stopwords_pattern, self.__min_char_length, self.__max_words_length, self.__lemmatize)
 
         word_scores = calculate_word_scores(phrase_list)
 

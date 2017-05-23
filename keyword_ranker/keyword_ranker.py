@@ -17,18 +17,18 @@ def txt_reader(file_txt, encoding='utf-8'):
 class KeywordRanker(object):
     def __init__(self, min_char_length=1, max_words_length=3,
                 min_keyword_frequency=3, lemmatize=False,
-                absolute_deviation=True, stopwords_txt='smartstoplist.txt'):
+                absolute_deviation=True, stopwords_path='smartstoplist.txt'):
         self.min_char_length = min_char_length
         self.max_words_length = max_words_length
         self.min_keyword_frequency = min_keyword_frequency
         self.corpus_keywords = None
         self.lemmatize = lemmatize
         self.absolute_deviation = absolute_deviation
-        self.stopwords_txt = stopwords_txt
-        self.stopwordpattern = rake.build_stop_word_regex(self.stopwords_txt)
+        self.stopwords_path = stopwords_path
+        self.stopwords_pattern = rake.build_stopword_regex(self.stopwords_path)
 
     def fit(self, corpus_txt, encoding='utf-8'):
-        rake_object = rake.Rake(self.stopwords_txt, self.min_char_length,
+        rake_object = rake.Rake(self.stopwords_path, self.min_char_length,
                         self.max_words_length, self.min_keyword_frequency,
                         self.lemmatize)
         text = txt_reader(corpus_txt, encoding=encoding)
@@ -41,7 +41,7 @@ class KeywordRanker(object):
         text = txt_reader(transcript_txt, encoding=encoding)
         sentencelist = rake.split_sentences(text)
         phraselist = rake.generate_candidate_keywords(sentencelist,
-                        self.stopwordpattern, self.min_char_length,
+                        self.stopwords_pattern, self.min_char_length,
                         self.max_words_length, self.lemmatize)
         wordscores = rake.calculate_word_scores(phraselist)
         return wordscores
