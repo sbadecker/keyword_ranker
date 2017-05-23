@@ -20,7 +20,7 @@ python keyword_ranker/setup.py install
 ## Usage
 
 ```python
-from keyword_ranker import KeywordRanker
+from keyword_ranker.kwr import KeywordRanker
 
 kr = KeywordRanker()
 
@@ -30,7 +30,7 @@ kr = KeywordRanker()
 
 kr.fit() # Extracts and scores the keywords from the corpus.
 
-kr.rank() # Ranks the corpus keywords with regards to the provided documents.
+kr.rank() # Ranks the n highest scoring corpus keywords with regards to the provided documents.
 ```
 
 ## References

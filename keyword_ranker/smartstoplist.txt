@@ -1,4 +1,4 @@
-#stop word list from SMART (Salton,1971).  Available at ftp://ftp.cs.cornell.edu/pub/smart/english.stop
+#stop word list from SMART (Salton,1971).
 a
 a's
 able
