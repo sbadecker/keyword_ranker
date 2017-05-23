@@ -1,11 +1,15 @@
 '''
 Requirements:
 - nltk needs to be installed
-- corpora/wordnet from NLTK needs to be downloaded
 '''
 
+import os
+# from keyword_ranker import rake
 import rake
 from collections import defaultdict
+
+
+smartstoplist = os.path.dirname(__file__)+'/smartstoplist.txt'
 
 
 def txt_reader(file_txt, encoding='utf-8'):
@@ -17,13 +21,12 @@ def txt_reader(file_txt, encoding='utf-8'):
 class KeywordRanker(object):
     def __init__(self, min_char_length=1, max_words_length=3,
                 min_keyword_frequency=3, lemmatize=False,
-                absolute_deviation=True, stopwords_path='smartstoplist.txt'):
+                absolute_deviation=True, stopwords_path=smartstoplist):
         self.min_char_length = min_char_length
         self.max_words_length = max_words_length
         self.min_keyword_frequency = min_keyword_frequency
         self.corpus_keywords = None
         self.lemmatize = lemmatize
-        self.absolute_deviation = absolute_deviation
         self.stopwords_path = stopwords_path
         self.stopwords_pattern = rake.build_stopword_regex(self.stopwords_path)
 
@@ -46,7 +49,7 @@ class KeywordRanker(object):
         wordscores = rake.calculate_word_scores(phraselist)
         return wordscores
 
-    def rank(self, n, *transcripts, encoding='utf-8'):
+    def rank(self, n, *transcripts, absolute_deviation=False, encoding='utf-8'):
         '''Scores the ton n corpus keywords with a wordscores list.'''
         top_n_corpus = [word[0] for word in self.corpus_keywords[:n]]
         keyword_scores = defaultdict(int)
@@ -64,16 +67,17 @@ class KeywordRanker(object):
         keyword_rank = [(key, keyword_scores[key]) for key in
                         sorted(keyword_scores, key=keyword_scores.get,
                         reverse=True)]
-        keyword_deviation = self.get_deviation(keyword_rank, n)
+        keyword_deviation = self.get_deviation(keyword_rank, n,
+                            absolute_deviation)
         return keyword_rank, keyword_deviation
 
-    def get_deviation(self, keyword_rank, n, absolute=True):
+    def get_deviation(self, keyword_rank, n, absolute_deviation):
         if n > len(self.corpus_keywords):
             raise ValueError('n too large. Pick n of max. {}.' \
             .format(len(self.corpus_keywords)))
         kwr_sorted = sorted(keyword_rank)
         ckw_sorted = sorted(self.corpus_keywords[:n])
-        if self.absolute_deviation:
+        if absolute_deviation:
             keyword_deviation = [(kwr_sorted[i][0], (kwr_sorted[i][1]
                                 - ckw_sorted[i][1])) for i in range(n)]
         else:
@@ -94,6 +98,6 @@ if __name__ == '__main__':
     transcript3 = '/Users/stefandecker/Coding/keyword_ranker/data/transcript_2.txt'
 
 
-    kwr = KeywordRanker(1, 3, 2, lemmatize=True)
+    kwr = KeywordRanker()
     kwr.fit(corpus)
-    keyword_rank1, keyword_deviation1 = kwr.rank(10, transcript1, transcript2, transcript3)
+    keyword_rank1, keyword_deviation1 = kwr.rank(10, transcript1)
