@@ -20,16 +20,22 @@ git clone hhttps://github.com/sbadecker/keyword_ranker.git
 python keyword_ranker/setup.py install
 ```
 
+## Dependencies
+
+This package requires the modules NLTK and six and will install them if necessary.
+To use lemmatization, nltk.corpus.wordnet is required an will be downloaded if necessary.
+
+## Languages
+
+This package comes with an English stopwords list. You can specify your own set of stopwords by adding the filepath as an argument (stopwords_path).
+As of now, lemmatization is only supported in for English documents.
+
 ## Usage
 
 ```python
 from keyword_ranker.kwr import KeywordRanker
 
 kr = KeywordRanker()
-
-# Uses english stopwords from the smartstoplist.txt included in the package by default.
-# You can specify your own set of stopwords by adding the filepath as an argument.
-
 
 kr.fit() # Extracts and scores the keywords from the corpus.
 # example: kr.fit(corpus.txt)

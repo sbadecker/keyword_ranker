@@ -1,10 +1,12 @@
 keyword\_ranker
 ===============
 
-The Keyword Ranker uses the Rapid Automatic Keyword Extraction algorithm
-(RAKE) to extract the most relevant keywords from a reference corpus,
-and ranks them depending on the degree to which they are represented in other
-benchmark documents.
+| The Keyword Ranker uses the Rapid Automatic Keyword Extraction
+  algorithm
+| (RAKE) to extract the most relevant keywords from a reference corpus,
+| and ranks them depending on the degree to which they are represented
+  in other
+| benchmark documents.
 
 Setup
 -----
@@ -24,6 +26,22 @@ Directly from the repository
     git clone hhttps://github.com/sbadecker/keyword_ranker.git
     python keyword_ranker/setup.py install
 
+Dependencies
+------------
+
+| This package requires the modules NLTK and six and will install them
+  if necessary.
+| To use lemmatization, nltk.corpus.wordnet is required an will be
+  downloaded if necessary.
+
+Languages
+---------
+
+| This package comes with an English stopwords list. You can specify
+  your own set of stopwords by adding the filepath as an argument
+  (stopwords\_path).
+| As of now, lemmatization is only supported in for English documents.
+
 Usage
 -----
 
@@ -32,10 +50,6 @@ Usage
     from keyword_ranker.kwr import KeywordRanker
 
     kr = KeywordRanker()
-
-    # Uses english stopwords from the smartstoplist.txt included in the package by default.
-    # You can specify your own set of stopwords by adding the filepath as an argument.
-
 
     kr.fit() # Extracts and scores the keywords from the corpus.
     # example: kr.fit(corpus.txt)
@@ -48,12 +62,12 @@ Usage
 References
 ----------
 
-This package uses a Python implementation of the RAKE algorithm as
-mentiones in paper `Automatic keyword extraction from individual
-documents by Stuart Rose, Dave Engel, Nick Cramer and Wendy Cowley`_.
-The original code included in rake.py can be found here:
-https://github.com/zelandiya/RAKE-tutorial. It has been extended by me
-to support lemmatization using WordNetLemmatizer from the NLTK.
+| This package uses a Python implementation of the RAKE algorithm as
+  mentioned in paper `Automatic keyword extraction from individual
+  documents by Stuart Rose, Dave Engel, Nick Cramer and Wendy Cowley`_.
+| The original code included in rake.py can be found here:
+  https://github.com/zelandiya/RAKE-tutorial. It has been extended by me
+  to support lemmatization using WordNetLemmatizer from the NLTK.
 
 Versions of python this code is tested against
 ----------------------------------------------
