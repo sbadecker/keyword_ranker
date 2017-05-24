@@ -1,11 +1,16 @@
 '''
-Requirements:
-- nltk needs to be installed
+The Keyword Ranker uses the Rapid Automatic Keyword Extraction algorithm (RAKE)
+to extract the most relevant keywords from a reference corpus, and ranks them
+depending on the degree to which they are represented in other benchmark
+documents.
+
+For more infos and examples visit:
+https://github.com/sbadecker/keyword_ranker
+
 '''
 
 import os
-# from keyword_ranker import rake
-import rake
+from keyword_ranker import rake
 from collections import defaultdict
 
 
@@ -19,9 +24,44 @@ def txt_reader(file_txt, encoding='utf-8'):
 
 
 class KeywordRanker(object):
+    '''Generates a KeywordRanker object.
+
+    Parameters
+    ----------
+    min_char_length : int
+        The minimum number of characters a word must have to be included.
+    max_words_length : int
+        The Maximum number of words a keyword can have to be included.
+    min_keyword_frequency : int
+        Minimum number of occurances a keyword must have in the  corpus to be
+        included.
+    lemmatize : bool
+        Use lemmatization (NLTKs WordNetLemmatizer).
+    stopwords_path : str
+        Path and filename of a file containing stop words. Each stopword needs
+        to be on a new line.
+
+
+    Attributes
+    ----------
+    corpus_keywords : int
+        Includes the keywords and corresponding scores.
+
+
+    Returns
+    ------
+    out : KeywordRanker object
+
+
+    Notes
+    -----
+    Using large values for min_keyword_frequency and min_char_length will result
+    in no keywords being found and will raise an error when fitting the corpus.
+
+    '''
     def __init__(self, min_char_length=1, max_words_length=3,
-                min_keyword_frequency=3, lemmatize=False,
-                absolute_deviation=True, stopwords_path=smartstoplist):
+                min_keyword_frequency=3, lemmatize=True,
+                stopwords_path=smartstoplist):
         self.min_char_length = min_char_length
         self.max_words_length = max_words_length
         self.min_keyword_frequency = min_keyword_frequency
@@ -31,6 +71,24 @@ class KeywordRanker(object):
         self.stopwords_pattern = rake.build_stopword_regex(self.stopwords_path)
 
     def fit(self, corpus_txt, encoding='utf-8'):
+        '''
+        Extracts and scores the keywords of the provided corpus and stores
+        them in self.corpus_keywords.
+
+        Parameters
+        ----------
+        corpus_txt : str
+            Path and filename of corpus document.
+        encoding : str
+            Specifies type of encoding.
+
+
+        Notes
+        -----
+        Using large values for min_keyword_frequency and min_char_length will result
+        in no keywords being found and will raise an error when fitting the corpus.
+
+        '''
         rake_object = rake.Rake(self.stopwords_path, self.min_char_length,
                         self.max_words_length, self.min_keyword_frequency,
                         self.lemmatize)
@@ -50,7 +108,35 @@ class KeywordRanker(object):
         return wordscores
 
     def rank(self, n, *transcripts, absolute_deviation=False, encoding='utf-8'):
-        '''Scores the ton n corpus keywords with a wordscores list.'''
+        '''
+        Calls the wordscores function to generate a wordscores dictionary for
+        the provided transcripts and scores the top n corpus keywords on this
+        dictionary.
+
+        Parameters
+        ----------
+        n : int
+            Number of corpus keywords to analyze. Picks the highest scoring
+            corpus keywords first.
+        *transcrips : str
+            Paths and filenames to arbitrary number of transcripts that the
+            corpus keywords should be scored against.
+        absolute_deviation : bool
+            Calculate absolute deviation of keyword score from corpus to
+            documents. If set to False, relative deviation will be calculated.
+        encoding : str
+            Specifies type of encoding.
+
+
+        Returns
+        ------
+        keyword_rank : list of tuples
+            Includes the keywords and corresponding scores on the transcripts.
+        keyword_deviation : list of tuples
+            Includes the keywords and corresponding deviation from their scores
+            on the corpus.
+
+        '''
         top_n_corpus = [word[0] for word in self.corpus_keywords[:n]]
         keyword_scores = defaultdict(int)
         n_transcripts = len(transcripts)
@@ -88,16 +174,3 @@ class KeywordRanker(object):
         kw_zipped_sorted = sorted(kw_zipped, key=lambda x: -x[1][1])
         keyword_deviation = [kw[0] for kw in kw_zipped_sorted]
         return keyword_deviation
-
-
-if __name__ == '__main__':
-    stopwords = '/Users/stefandecker/Coding/RAKE-tutorial/SmartStoplist.txt'
-    corpus = '/Users/stefandecker/Coding/keyword_ranker/data/script.txt'
-    transcript1 = '/Users/stefandecker/Coding/keyword_ranker/data/transcript_1.txt'
-    transcript2 = '/Users/stefandecker/Coding/keyword_ranker/data/transcript_2.txt'
-    transcript3 = '/Users/stefandecker/Coding/keyword_ranker/data/transcript_2.txt'
-
-
-    kwr = KeywordRanker()
-    kwr.fit(corpus)
-    keyword_rank1, keyword_deviation1 = kwr.rank(10, transcript1)

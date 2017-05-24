@@ -8,7 +8,7 @@
 # NOTE: The original code can be found here:
 # https://github.com/zelandiya/RAKE-tutorial
 # has been extended by sbadecker to support lemmatization using
-# WordNetLemmatizer from the NLTK.
+# WordNetLemmatizer from NLTK.
 
 
 from __future__ import absolute_import
@@ -36,11 +36,22 @@ def is_number(s):
 
 
 def load_stopwords(stopword_file):
-    """
-    Utility function to load stop words from a file and return as a list of words
-    @param stopword_file: Path and file name of a file containing stop words.
-    @return list: A list of stop words.
-    """
+    '''
+    Utility function to load stop words from a file and return as a list of
+    words.
+
+    Parameters
+    ----------
+    stopword_file : str
+        Path and filename of a file containing stop words.
+
+
+    Returns
+    ------
+    stopwords :  list
+        A list of stop words.
+
+    '''
     stopwords = []
     for line in open(stopword_file):
         if line.strip()[0:1] != "#":
@@ -63,14 +74,24 @@ def lemmatize_phrases(phraselist):
 
 
 def separate_words(text, min_word_return_size):
-    """
+    '''
     Utility function to return a list of all words that are have a length
     greater than a specified number of characters.
-    @param text: The text that must be split in to words.
-    @param min_word_return_size: The minimum no of characters a word must have
-    to be included.
-    """
-    lemmatizer = WordNetLemmatizer()
+
+    Parameters
+    ----------
+    text : str
+        The text that must be split in to words.
+    min_word_return_size : int
+        The minimum number of characters a word must have to be included.
+
+
+    Returns
+    ------
+    words :  list
+        A list of words.
+
+    '''
     splitter = re.compile('[^a-zA-Z0-9_\\+\\-/]')
     words = []
     for single_word in splitter.split(text):
@@ -84,10 +105,20 @@ def separate_words(text, min_word_return_size):
 
 
 def split_sentences(text):
-    """
+    '''
     Utility function to return a list of sentences.
-    @param text: The text that must be split in to sentences.
-    """
+
+    Parameters
+    ----------
+    text : str
+        The text that must be split in to sentences.
+
+    Returns
+    ------
+    words :  list
+        A list of sentences.
+
+    '''
     sentence_delimiters = re.compile(u'[\\[\\]\n.!?,;:\t\\-\\"\\(\\)\\\'\u2019\u2013]')
     sentences = sentence_delimiters.split(text)
     return sentences
@@ -104,7 +135,7 @@ def build_stopword_regex(stopword_file_path):
 
 
 def generate_candidate_keywords(sentence_list, stopword_pattern,
-    min_char_length=1, max_words_length=3, lemmatize=False):
+    min_char_length=1, max_words_length=3, lemmatize=True):
     phrase_list = []
     for s in sentence_list:
         tmp = re.sub(stopword_pattern, '|', s.strip())
