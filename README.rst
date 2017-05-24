@@ -38,8 +38,12 @@ Usage
 
 
     kr.fit() # Extracts and scores the keywords from the corpus.
+    # example: kr.fit(corpus.txt)
 
     kr.rank() # Ranks the n highest scoring corpus keywords with regards to the provided documents.
+    # example: kr.rank(10, document1.txt, document2.txt)
+
+    # Tests can be run in the package directory using nosetests.
 
 References
 ----------

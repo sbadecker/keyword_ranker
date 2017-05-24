@@ -32,8 +32,12 @@ kr = KeywordRanker()
 
 
 kr.fit() # Extracts and scores the keywords from the corpus.
+# example: kr.fit(corpus.txt)
 
 kr.rank() # Ranks the n highest scoring corpus keywords with regards to the provided documents.
+# example: kr.rank(10, document1.txt, document2.txt)
+
+# Tests can be run in the package directory using nosetests.
 ```
 
 ## References
@@ -49,6 +53,7 @@ The original code included in rake.py can be found here: https://github.com/zela
 
 ### Bug Reports and Feature Requests
 Please use [issue tracker](https://github.com/sbadecker/keyword_ranker/issues) for reporting bugs or feature requests.
+
 
 ### Development
 Pull requests are most welcome.
