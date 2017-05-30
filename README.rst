@@ -23,7 +23,7 @@ Directly from the repository
 
 .. code:: bash
 
-    git clone hhttps://github.com/sbadecker/keyword_ranker.git
+    git clone https://github.com/sbadecker/keyword_ranker.git
     python keyword_ranker/setup.py install
 
 Dependencies
